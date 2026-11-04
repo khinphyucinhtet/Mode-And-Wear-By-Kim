@@ -72,6 +72,8 @@ import kotlinx.coroutines.launch
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import java.text.NumberFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.Calendar
 
@@ -80,6 +82,11 @@ private val ReceiptLightBlue = Color(0xFFDCEFFC)
 private val ReceiptBorder = Color(0xFFD9DDE2)
 private val ReceiptField = Color(0xFFF8F9FA)
 private val ReceiptMuted = Color(0xFF66717C)
+internal const val DEFAULT_DISCOUNT_DIGITS = "0"
+private val ReceiptDateFormatter = DateTimeFormatter.ofPattern("d.M.yyyy", Locale.US)
+
+internal fun formatReceiptDate(date: LocalDate = LocalDate.now()): String =
+    date.format(ReceiptDateFormatter)
 
 private class ReceiptLine(
     name: String,
@@ -98,9 +105,9 @@ fun ReceiptsScreen(onBackClick: () -> Unit) {
 
     var customerName by rememberSaveable { mutableStateOf("") }
     var phoneNumber by rememberSaveable { mutableStateOf("") }
-    var receiptDate by rememberSaveable { mutableStateOf("") }
+    var receiptDate by rememberSaveable { mutableStateOf(formatReceiptDate()) }
     var address by rememberSaveable { mutableStateOf("") }
-    var discountDigits by rememberSaveable { mutableStateOf("") }
+    var discountDigits by rememberSaveable { mutableStateOf(DEFAULT_DISCOUNT_DIGITS) }
     var deliveryDigits by rememberSaveable { mutableStateOf("") }
     val items = remember {
         mutableStateListOf(
@@ -361,7 +368,8 @@ fun ReceiptsScreen(onBackClick: () -> Unit) {
                 ReceiptInput(
                     value = customerName,
                     onValueChange = { customerName = it },
-                    placeholder = "Customer name"
+                    placeholder = "Customer name",
+                    semanticLabel = "Customer name"
                 )
 
                 Spacer(Modifier.height(7.dp))
@@ -385,7 +393,8 @@ fun ReceiptsScreen(onBackClick: () -> Unit) {
                                 onValueChange = {},
                                 modifier = Modifier.fillMaxWidth().clickable { openDatePicker() },
                                 readOnly = true,
-                                placeholder = "Select date"
+                                placeholder = "Select date",
+                                semanticLabel = "Receipt date"
                             )
                             Text(
                                 text = "▦",
@@ -438,7 +447,11 @@ fun ReceiptsScreen(onBackClick: () -> Unit) {
                     Column(modifier = Modifier.weight(1f)) {
                         SmallLabel("Discount")
                         Spacer(Modifier.height(3.dp))
-                        AmountInput(value = discountDigits, onValueChange = { discountDigits = it })
+                        AmountInput(
+                            value = discountDigits,
+                            onValueChange = { discountDigits = it },
+                            semanticLabel = "Discount amount"
+                        )
                     }
                     Column(modifier = Modifier.weight(1f)) {
                         SmallLabel("Delivery fee")
@@ -567,7 +580,8 @@ private fun ReceiptInput(
     singleLine: Boolean = true,
     keyboardType: KeyboardType = KeyboardType.Text,
     placeholder: String? = null,
-    readOnly: Boolean = false
+    readOnly: Boolean = false,
+    semanticLabel: String? = null
 ) {
     BasicTextField(
         value = value,
@@ -577,7 +591,10 @@ private fun ReceiptInput(
             .clip(RoundedCornerShape(5.dp))
             .background(ReceiptField)
             .border(1.dp, ReceiptBorder, RoundedCornerShape(5.dp))
-            .padding(horizontal = 9.dp, vertical = if (singleLine) 7.dp else 8.dp),
+            .padding(horizontal = 9.dp, vertical = if (singleLine) 7.dp else 8.dp)
+            .semantics {
+                if (semanticLabel != null) contentDescription = semanticLabel
+            },
         singleLine = singleLine,
         readOnly = readOnly,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
@@ -600,12 +617,17 @@ private fun ReceiptInput(
 }
 
 @Composable
-private fun AmountInput(value: String, onValueChange: (String) -> Unit) {
+private fun AmountInput(
+    value: String,
+    onValueChange: (String) -> Unit,
+    semanticLabel: String? = null
+) {
     ReceiptInput(
         value = formatEditableAmount(value),
         onValueChange = { onValueChange(it.filter(Char::isDigit)) },
         keyboardType = KeyboardType.Number,
-        placeholder = "Amount"
+        placeholder = "Amount",
+        semanticLabel = semanticLabel
     )
 }
 

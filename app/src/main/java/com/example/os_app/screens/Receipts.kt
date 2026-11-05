@@ -655,7 +655,7 @@ private fun ItemCard(
             )
             Box(
                 modifier = Modifier
-                    .size(24.dp)
+                    .size(48.dp)
                     .clickable(onClick = onDelete)
                     .semantics { contentDescription = "Delete item" },
                 contentAlignment = Alignment.Center
@@ -694,7 +694,7 @@ private fun ItemCard(
 
 @Composable
 private fun TrashIcon() {
-    Canvas(modifier = Modifier.size(14.dp)) {
+    Canvas(modifier = Modifier.size(22.dp)) {
         val strokeWidth = 1.2.dp.toPx()
         drawLine(Color(0xFFCE4B52), Offset(size.width * 0.28f, size.height * 0.30f), Offset(size.width * 0.72f, size.height * 0.30f), strokeWidth)
         drawLine(Color(0xFFCE4B52), Offset(size.width * 0.40f, size.height * 0.20f), Offset(size.width * 0.60f, size.height * 0.20f), strokeWidth)
